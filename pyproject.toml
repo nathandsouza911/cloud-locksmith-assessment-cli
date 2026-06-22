@@ -1,0 +1,28 @@
+[project]
+name = "cloud-locksmith-assessment-cli"
+version = "0.1.0"
+requires-python = ">=3.12"
+description = "Local-first Microsoft 365 security assessment CLI"
+dependencies = [
+    "typer>=0.12",
+    "msal>=1.28",
+    "requests>=2.31",
+    "pydantic>=2.7",
+    "reportlab>=4.1",
+]
+
+[project.scripts]
+cloudlocksmith = "cli:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["auth", "findings", "graph", "models", "pricing", "reports"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

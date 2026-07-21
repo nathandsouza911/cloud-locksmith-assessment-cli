@@ -40,4 +40,4 @@ The architecture is designed to make this clean:
 
 ## Reporting bugs and ideas
 
-Please use GitHub Issues for bugs and feature requests, and GitHub Discussions (if enabled) for questions, methodology debate, and "should this be a control?" conversations. For anything security-sensitive, follow [SECURITY.md](SECURITY.md) instead of opening a public issue.
+Please use GitHub Issues for bugs and feature requests, and GitHub Discussions for questions, methodology debate, and "should this be a control?" conversations. For anything security-sensitive, follow [SECURITY.md](SECURITY.md) instead of opening a public issue.

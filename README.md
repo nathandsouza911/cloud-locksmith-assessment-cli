@@ -1,5 +1,9 @@
 # Cloud Locksmith Assessment CLI
 
+[![CI](https://github.com/nathandsouza911/cloud-locksmith-assessment-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/nathandsouza911/cloud-locksmith-assessment-cli/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
+
 A fast, local, read-only Microsoft 365 security posture assessment you can run in a few minutes.
 
 It authenticates with Microsoft Device Code flow, reads a focused set of identity and tenant-policy signals through the Microsoft Graph API, and produces a terminal summary plus Markdown, PDF, and JSON reports. Everything runs on your machine.

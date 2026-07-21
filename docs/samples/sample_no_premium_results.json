@@ -1,0 +1,156 @@
+{
+  "generated_at": "2026-01-15T09:00:00+00:00",
+  "schema_version": "2.0.0",
+  "license_waste": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "active_units": 30,
+    "consumed_units": 28,
+    "unassigned_units": 2,
+    "estimated_reclaimable_monthly_usd": 25.0,
+    "estimated_reclaimable_annual_usd": 300.0,
+    "priced_unassigned_units": 2,
+    "unpriced_unassigned_units": 0,
+    "unknown_skus": [],
+    "partial_pricing_warning": null,
+    "pricing_source": "Microsoft public list prices (approximate)"
+  },
+  "global_admins": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "count": 2,
+    "risk_level": "Good"
+  },
+  "privileged_mfa": {
+    "status": "SKIPPED",
+    "skipped_reason": "Requires Microsoft Entra ID P1 or P2 licensing.",
+    "privileged_user_count": 0,
+    "mfa_registered_count": 0,
+    "coverage_pct": 0.0
+  },
+  "tenant_mfa": {
+    "status": "SKIPPED",
+    "skipped_reason": "Requires Microsoft Entra ID P1 or P2 licensing.",
+    "total_users": 0,
+    "mfa_registered_count": 0,
+    "coverage_pct": 0.0
+  },
+  "privileged_roles": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "distinct_privileged_users": 2,
+    "roles": [
+      {
+        "role_name": "Global Administrator",
+        "member_count": 2
+      }
+    ]
+  },
+  "dormant_users": {
+    "status": "SKIPPED",
+    "skipped_reason": "Sign-in activity unavailable for this tenant.",
+    "total_count": 0,
+    "examples": []
+  },
+  "disabled_licensed_users": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "total_count": 1,
+    "examples": []
+  },
+  "guest_users": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "total_count": 2,
+    "examples": []
+  },
+  "stale_guests": {
+    "status": "SKIPPED",
+    "skipped_reason": "Sign-in activity unavailable for this tenant.",
+    "total_count": 0,
+    "examples": []
+  },
+  "security_defaults": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "enabled": true
+  },
+  "conditional_access": {
+    "status": "SKIPPED",
+    "skipped_reason": "Conditional Access inventory requires Policy.Read.All admin consent and Microsoft Entra ID P1 or P2 licensing.",
+    "policy_count": 0,
+    "enabled_count": 0,
+    "report_only_count": 0,
+    "examples": []
+  },
+  "user_consent": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "users_can_consent": false,
+    "detail": "User app consent is restricted to administrators (recommended)."
+  },
+  "posture": {
+    "controls": [
+      {
+        "name": "Privileged MFA Coverage",
+        "status": "SKIPPED",
+        "detail": "Requires Microsoft Entra ID P1 or P2 licensing.",
+        "points": 0,
+        "max_points": 2
+      },
+      {
+        "name": "Global Admin Count",
+        "status": "PASS",
+        "detail": "2 Global Admin(s) (\u22643 recommended)",
+        "points": 2,
+        "max_points": 2
+      },
+      {
+        "name": "Tenant MFA Coverage",
+        "status": "SKIPPED",
+        "detail": "Requires Microsoft Entra ID P1 or P2 licensing.",
+        "points": 0,
+        "max_points": 2
+      },
+      {
+        "name": "Baseline Access Enforcement",
+        "status": "PASS",
+        "detail": "Security Defaults enabled",
+        "points": 2,
+        "max_points": 2
+      },
+      {
+        "name": "User App Consent",
+        "status": "PASS",
+        "detail": "User app consent restricted to administrators",
+        "points": 2,
+        "max_points": 2
+      },
+      {
+        "name": "Dormant Enabled Accounts",
+        "status": "SKIPPED",
+        "detail": "Sign-in activity unavailable for this tenant.",
+        "points": 0,
+        "max_points": 2
+      },
+      {
+        "name": "Stale Guest Access",
+        "status": "SKIPPED",
+        "detail": "Sign-in activity unavailable for this tenant.",
+        "points": 0,
+        "max_points": 2
+      }
+    ],
+    "total_score": 6,
+    "max_possible_score": 6,
+    "score_pct": 100.0,
+    "skipped_controls": [
+      "Privileged MFA Coverage",
+      "Tenant MFA Coverage",
+      "Dormant Enabled Accounts",
+      "Stale Guest Access"
+    ],
+    "grade": "Good",
+    "grade_cap_reason": "Grade capped at Good because Privileged MFA Coverage could not be evaluated."
+  }
+}

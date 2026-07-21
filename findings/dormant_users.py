@@ -15,6 +15,12 @@ class DormantUserFinder:
     def run(self) -> DormantUsersFinding:
         try:
             users = fetch_all_licensed_users(self._provider)
+            # Dormant is an *enabled*-account security signal: an enabled, licensed
+            # identity with no recent sign-in is live attack surface. Disabled
+            # accounts cannot authenticate, so they belong to the separate
+            # (cost/hygiene) "disabled licensed users" finding — excluding them
+            # here also prevents the two categories from double-counting.
+            users = [u for u in users if u.accountEnabled]
             if not users:
                 return DormantUsersFinding(status=FindingStatus.SUCCESS, total_count=0)
 
@@ -28,7 +34,10 @@ class DormantUserFinder:
             cutoff = datetime.now(timezone.utc) - timedelta(days=DORMANT_THRESHOLD_DAYS)
             dormant = [u for u in users if self._is_dormant(u, cutoff)]
             examples = [
-                UserSummary(display_name=u.displayName, user_principal_name=u.userPrincipalName)
+                UserSummary(
+                    display_name=u.displayName or u.userPrincipalName or u.id,
+                    user_principal_name=u.userPrincipalName or u.id,
+                )
                 for u in dormant[:3]
             ]
             return DormantUsersFinding(

@@ -9,9 +9,10 @@ class SignInActivity(BaseModel):
 
 class User(BaseModel):
     id: str
-    displayName: str
-    userPrincipalName: str
+    displayName: str | None = None
+    userPrincipalName: str | None = None
     accountEnabled: bool = True
+    userType: str | None = None
     assignedLicenses: list[dict] = Field(default_factory=list)
     signInActivity: SignInActivity | None = None
 
@@ -30,6 +31,33 @@ class SubscribedSku(BaseModel):
 
 
 class CredentialRegistration(BaseModel):
-    userId: str
-    userPrincipalName: str
-    isMfaRegistered: bool
+    id: str
+    userPrincipalName: str | None = None
+    isMfaRegistered: bool = False
+
+
+class SecurityDefaults(BaseModel):
+    """policies/identitySecurityDefaultsEnforcementPolicy"""
+    isEnabled: bool = False
+
+
+class ConditionalAccessPolicy(BaseModel):
+    """identity/conditionalAccess/policies — inventory only, no rule internals."""
+    id: str
+    displayName: str | None = None
+    # "enabled" | "disabled" | "enabledForReportingButNotEnforced"
+    state: str | None = None
+
+
+class DefaultUserRolePermissions(BaseModel):
+    # Which app-consent policies are granted to the default (non-admin) user role.
+    permissionGrantPoliciesAssigned: list[str] = Field(default_factory=list)
+
+
+class AuthorizationPolicy(BaseModel):
+    """policies/authorizationPolicy — tenant-wide user/consent/guest defaults."""
+    defaultUserRolePermissions: DefaultUserRolePermissions = Field(
+        default_factory=DefaultUserRolePermissions
+    )
+    # "everyone" | "adminsAndGuestInviters" | "adminsGuestInvitersAndAllMembers" | "none"
+    allowInvitesFrom: str | None = None

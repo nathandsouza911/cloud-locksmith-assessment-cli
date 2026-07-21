@@ -1,0 +1,189 @@
+{
+  "generated_at": "2026-01-15T09:00:00+00:00",
+  "schema_version": "2.0.0",
+  "license_waste": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "active_units": 175,
+    "consumed_units": 161,
+    "unassigned_units": 14,
+    "estimated_reclaimable_monthly_usd": 446.0,
+    "estimated_reclaimable_annual_usd": 5352.0,
+    "priced_unassigned_units": 12,
+    "unpriced_unassigned_units": 2,
+    "unknown_skus": [
+      "CONTOSO_ADDON"
+    ],
+    "partial_pricing_warning": "2 reclaimable seat(s) across 1 SKU(s) have no pricing data; the dollar estimate covers only priced SKUs.",
+    "pricing_source": "Microsoft public list prices (approximate)"
+  },
+  "global_admins": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "count": 4,
+    "risk_level": "Moderate"
+  },
+  "privileged_mfa": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "privileged_user_count": 6,
+    "mfa_registered_count": 6,
+    "coverage_pct": 100.0
+  },
+  "tenant_mfa": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "total_users": 150,
+    "mfa_registered_count": 123,
+    "coverage_pct": 82.0
+  },
+  "privileged_roles": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "distinct_privileged_users": 7,
+    "roles": [
+      {
+        "role_name": "Global Administrator",
+        "member_count": 4
+      },
+      {
+        "role_name": "Security Administrator",
+        "member_count": 2
+      },
+      {
+        "role_name": "Exchange Administrator",
+        "member_count": 2
+      }
+    ]
+  },
+  "dormant_users": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "total_count": 6,
+    "examples": [
+      {
+        "display_name": "Sample Dormant One",
+        "user_principal_name": "dormant1@contoso.example"
+      },
+      {
+        "display_name": "Sample Dormant Two",
+        "user_principal_name": "dormant2@contoso.example"
+      }
+    ]
+  },
+  "disabled_licensed_users": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "total_count": 2,
+    "examples": [
+      {
+        "display_name": "Former Employee",
+        "user_principal_name": "former@contoso.example"
+      }
+    ]
+  },
+  "guest_users": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "total_count": 14,
+    "examples": [
+      {
+        "display_name": "Partner Contact",
+        "user_principal_name": "partner_contoso.example#EXT#@contoso.example"
+      }
+    ]
+  },
+  "stale_guests": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "total_count": 5,
+    "examples": [
+      {
+        "display_name": "Old Vendor",
+        "user_principal_name": "vendor_old#EXT#@contoso.example"
+      }
+    ]
+  },
+  "security_defaults": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "enabled": false
+  },
+  "conditional_access": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "policy_count": 5,
+    "enabled_count": 3,
+    "report_only_count": 1,
+    "examples": [
+      "Require MFA for admins",
+      "Block legacy authentication",
+      "Require compliant device"
+    ]
+  },
+  "user_consent": {
+    "status": "SUCCESS",
+    "skipped_reason": null,
+    "users_can_consent": true,
+    "detail": "Ordinary users can consent to third-party apps. Restricting this to admin approval reduces illicit-consent (OAuth phishing) risk."
+  },
+  "posture": {
+    "controls": [
+      {
+        "name": "Privileged MFA Coverage",
+        "status": "PASS",
+        "detail": "100% of privileged users have MFA registered",
+        "points": 2,
+        "max_points": 2
+      },
+      {
+        "name": "Global Admin Count",
+        "status": "WARNING",
+        "detail": "4 Global Admins (4\u20135; consider reducing)",
+        "points": 1,
+        "max_points": 2
+      },
+      {
+        "name": "Tenant MFA Coverage",
+        "status": "WARNING",
+        "detail": "82% tenant MFA coverage (\u226590% to PASS)",
+        "points": 1,
+        "max_points": 2
+      },
+      {
+        "name": "Baseline Access Enforcement",
+        "status": "PASS",
+        "detail": "3 enabled Conditional Access policy(ies)",
+        "points": 2,
+        "max_points": 2
+      },
+      {
+        "name": "User App Consent",
+        "status": "WARNING",
+        "detail": "Users can consent to third-party apps (restrict to admins)",
+        "points": 1,
+        "max_points": 2
+      },
+      {
+        "name": "Dormant Enabled Accounts",
+        "status": "FAIL",
+        "detail": "6 dormant enabled accounts \u2014 unused sign-in surface",
+        "points": 0,
+        "max_points": 2
+      },
+      {
+        "name": "Stale Guest Access",
+        "status": "WARNING",
+        "detail": "5 stale guest account(s) \u2014 review access",
+        "points": 1,
+        "max_points": 2
+      }
+    ],
+    "total_score": 8,
+    "max_possible_score": 14,
+    "score_pct": 57.1,
+    "skipped_controls": [],
+    "grade": "Fair",
+    "grade_cap_reason": null
+  }
+}

@@ -1,7 +1,7 @@
 import pytest
 from models.findings import FindingStatus, LicenseWasteFinding, DormantUsersFinding, UserSummary
 from models.graph import User, SubscribedSku, PrepaidUnits, SignInActivity
-from models.readiness import ControlResult, InsuranceReadiness
+from models.posture import ControlResult, PostureScore
 
 
 def test_finding_status_values():
@@ -14,7 +14,8 @@ def test_license_waste_finding_defaults_to_success():
     f = LicenseWasteFinding()
     assert f.status == FindingStatus.SUCCESS
     assert f.skipped_reason is None
-    assert f.estimated_annual_waste_usd == 0.0
+    assert f.estimated_reclaimable_annual_usd == 0.0
+    assert f.estimated_reclaimable_monthly_usd == 0.0
 
 
 def test_dormant_users_finding_list_is_not_shared():
@@ -32,9 +33,9 @@ def test_user_licenses_not_shared():
     assert len(b.assignedLicenses) == 0
 
 
-def test_insurance_readiness_controls_not_shared():
-    a = InsuranceReadiness(total_score=0, max_possible_score=0, score_pct=0.0, tier="Poor")
-    b = InsuranceReadiness(total_score=0, max_possible_score=0, score_pct=0.0, tier="Poor")
+def test_posture_score_controls_not_shared():
+    a = PostureScore(total_score=0, max_possible_score=0, score_pct=0.0, grade="Weak")
+    b = PostureScore(total_score=0, max_possible_score=0, score_pct=0.0, grade="Weak")
     a.controls.append(ControlResult(name="X", status="PASS", detail="ok", points=2))
     assert len(b.controls) == 0
 

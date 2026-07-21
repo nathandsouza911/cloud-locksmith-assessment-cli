@@ -23,24 +23,73 @@ def test_license_waste_calculates_unassigned():
     assert finding.consumed_units == 80
 
 
-def test_license_waste_estimates_annual_cost():
-    # SPE_E3 = $360/yr; 20 unassigned → $7,200
+def test_license_waste_estimates_annual_and_monthly_cost():
+    # SPE_E3 = $360/yr; 20 reclaimable → $7,200/yr, $600/mo
     stub = StubGraphDataProvider(skus=[_sku("SPE_E3", enabled=100, consumed=80)])
     finding = UnassignedLicenseFinder(stub).run()
-    assert finding.estimated_annual_waste_usd == 7200.0
+    assert finding.estimated_reclaimable_annual_usd == 7200.0
+    assert finding.estimated_reclaimable_monthly_usd == 600.0
+    assert finding.priced_unassigned_units == 20
 
 
-def test_license_waste_unknown_sku_priced_at_zero():
+def test_license_waste_unknown_sku_excluded_from_dollars():
     stub = StubGraphDataProvider(skus=[_sku("UNKNOWN_SKU", enabled=50, consumed=30)])
     finding = UnassignedLicenseFinder(stub).run()
-    assert finding.estimated_annual_waste_usd == 0.0
+    # Unknown SKU seats are counted as reclaimable but NOT priced as $0 waste.
+    assert finding.estimated_reclaimable_annual_usd == 0.0
+    assert finding.unassigned_units == 20
+    assert finding.unpriced_unassigned_units == 20
+    assert finding.priced_unassigned_units == 0
+    assert "UNKNOWN_SKU" in finding.unknown_skus
 
 
 def test_license_waste_no_waste():
     stub = StubGraphDataProvider(skus=[_sku("SPE_E3", enabled=100, consumed=100)])
     finding = UnassignedLicenseFinder(stub).run()
     assert finding.unassigned_units == 0
-    assert finding.estimated_annual_waste_usd == 0.0
+    assert finding.estimated_reclaimable_annual_usd == 0.0
+
+
+def test_license_waste_zero_priced_sku_counts_as_priced_not_unknown():
+    # FLOW_FREE is a known SKU priced at $0 — its spare seats are "priced" ($0),
+    # not "unpriced/unknown", so there is no partial-pricing warning.
+    stub = StubGraphDataProvider(skus=[_sku("FLOW_FREE", enabled=50, consumed=10)])
+    finding = UnassignedLicenseFinder(stub).run()
+    assert finding.unassigned_units == 40
+    assert finding.priced_unassigned_units == 40
+    assert finding.unpriced_unassigned_units == 0
+    assert finding.estimated_reclaimable_annual_usd == 0.0
+    assert finding.partial_pricing_warning is None
+
+
+def test_license_waste_mixed_priced_and_unpriced():
+    stub = StubGraphDataProvider(skus=[
+        _sku("SPE_E3", enabled=100, consumed=90),      # 10 priced, $360/yr each
+        _sku("CONTOSO_CUSTOM", enabled=20, consumed=15),  # 5 unpriced
+    ])
+    finding = UnassignedLicenseFinder(stub).run()
+    assert finding.unassigned_units == 15
+    assert finding.priced_unassigned_units == 10
+    assert finding.unpriced_unassigned_units == 5
+    assert finding.estimated_reclaimable_annual_usd == 3600.0
+    assert "CONTOSO_CUSTOM" in finding.unknown_skus
+    assert finding.partial_pricing_warning is not None
+
+
+def test_license_waste_user_pricing_override(tmp_path, monkeypatch):
+    import json
+    from pricing.sku_pricing import PRICING_OVERRIDE_ENV
+    override = tmp_path / "pricing.json"
+    override.write_text(json.dumps({"SPE_E3": 400.0, "CONTOSO_CUSTOM": 100.0}), encoding="utf-8")
+    monkeypatch.setenv(PRICING_OVERRIDE_ENV, str(override))
+    stub = StubGraphDataProvider(skus=[
+        _sku("SPE_E3", enabled=100, consumed=90),          # override: $400 → $4000
+        _sku("CONTOSO_CUSTOM", enabled=20, consumed=15),   # override: $100 → $500
+    ])
+    finding = UnassignedLicenseFinder(stub).run()
+    # Override takes precedence over the built-in $360 for SPE_E3, and prices the custom SKU.
+    assert finding.estimated_reclaimable_annual_usd == 4500.0
+    assert finding.unpriced_unassigned_units == 0
 
 
 def test_license_waste_skipped_when_no_skus():
@@ -96,6 +145,16 @@ def test_disabled_licensed_maps_to_user_summary():
     finding = DisabledLicensedFinder(stub).run()
     assert finding.examples[0].display_name == "User 1"
     assert finding.examples[0].user_principal_name == "u1@t.com"
+
+
+def test_disabled_licensed_handles_null_display_fields():
+    # A directory object may lack displayName/UPN; building examples must not crash.
+    u = User(id="guid-1", displayName=None, userPrincipalName=None,
+             accountEnabled=False, assignedLicenses=[{"skuId": "abc"}])
+    finding = DisabledLicensedFinder(StubGraphDataProvider(users=[u])).run()
+    assert finding.status == FindingStatus.SUCCESS
+    assert finding.examples[0].display_name == "guid-1"
+    assert finding.examples[0].user_principal_name == "guid-1"
 
 
 def test_disabled_licensed_zero_is_success_not_skipped():
@@ -164,8 +223,8 @@ from models.graph import CredentialRegistration
 def test_admin_mfa_full_coverage():
     admins = [_user("a1"), _user("a2")]
     regs = [
-        CredentialRegistration(userId="a1", userPrincipalName="a1@t.com", isMfaRegistered=True),
-        CredentialRegistration(userId="a2", userPrincipalName="a2@t.com", isMfaRegistered=True),
+        CredentialRegistration(id="a1", userPrincipalName="a1@t.com", isMfaRegistered=True),
+        CredentialRegistration(id="a2", userPrincipalName="a2@t.com", isMfaRegistered=True),
     ]
     stub = StubGraphDataProvider(registrations=regs)
     finding = AdminMFAFinder(stub, admins).run()
@@ -177,8 +236,8 @@ def test_admin_mfa_full_coverage():
 def test_admin_mfa_partial_coverage():
     admins = [_user("a1"), _user("a2")]
     regs = [
-        CredentialRegistration(userId="a1", userPrincipalName="a1@t.com", isMfaRegistered=True),
-        CredentialRegistration(userId="a2", userPrincipalName="a2@t.com", isMfaRegistered=False),
+        CredentialRegistration(id="a1", userPrincipalName="a1@t.com", isMfaRegistered=True),
+        CredentialRegistration(id="a2", userPrincipalName="a2@t.com", isMfaRegistered=False),
     ]
     stub = StubGraphDataProvider(registrations=regs)
     finding = AdminMFAFinder(stub, admins).run()
@@ -203,8 +262,8 @@ def test_admin_mfa_only_counts_admin_users():
     admins = [_user("a1")]
     # Registration for non-admin user "other" — must not be counted
     regs = [
-        CredentialRegistration(userId="a1", userPrincipalName="a1@t.com", isMfaRegistered=True),
-        CredentialRegistration(userId="other", userPrincipalName="other@t.com", isMfaRegistered=True),
+        CredentialRegistration(id="a1", userPrincipalName="a1@t.com", isMfaRegistered=True),
+        CredentialRegistration(id="other", userPrincipalName="other@t.com", isMfaRegistered=True),
     ]
     stub = StubGraphDataProvider(registrations=regs)
     finding = AdminMFAFinder(stub, admins).run()
@@ -243,3 +302,88 @@ def test_global_admins_skipped_when_no_members():
     finding = GlobalAdminFinder(stub).run()
     assert finding.status == FindingStatus.SKIPPED
     assert finding.skipped_reason is not None
+
+
+# ── SKU pricing warning ───────────────────────────────────────────────────────
+
+def test_license_waste_warns_on_unknown_sku():
+    stub = StubGraphDataProvider(skus=[_sku("UNKNOWN_SKU_XYZ", enabled=50, consumed=30)])
+    finding = UnassignedLicenseFinder(stub).run()
+    assert finding.status == FindingStatus.SUCCESS
+    assert finding.partial_pricing_warning is not None
+    assert "pricing data" in finding.partial_pricing_warning
+
+
+def test_license_waste_no_warning_when_all_skus_known():
+    stub = StubGraphDataProvider(skus=[_sku("SPE_E3", enabled=100, consumed=80)])
+    finding = UnassignedLicenseFinder(stub).run()
+    assert finding.partial_pricing_warning is None
+
+
+def test_license_waste_skipped_message_describes_tenant_type():
+    stub = StubGraphDataProvider(skus=[])
+    finding = UnassignedLicenseFinder(stub).run()
+    assert "commercial" in finding.skipped_reason.lower()
+    assert "developer" in finding.skipped_reason.lower()
+
+
+# ── MFA 403 classification ────────────────────────────────────────────────────
+
+from graph.errors import GraphAPIError
+from findings.admin_mfa import AdminMFAFinder, _classify_mfa_403
+
+
+def test_classify_mfa_403_consent_named_code():
+    msg = _classify_mfa_403("Authorization_RequestDenied", "Insufficient privileges to complete the operation.")
+    assert "admin consent" in msg.lower()
+
+
+def test_classify_mfa_403_consent_keyword_fallback():
+    msg = _classify_mfa_403("AccessDenied", "You must grant consent to access this resource.")
+    assert "admin consent" in msg.lower()
+
+
+def test_classify_mfa_403_licensing_named_code():
+    # The exact error code returned by Graph for tenants without Entra P1/P2
+    msg = _classify_mfa_403(
+        "Authentication_RequestFromNonPremiumTenantOrB2CTenant",
+        "Tenant is not a B2C tenant and doesn't have premium license",
+    )
+    assert "P1 or P2" in msg
+
+
+def test_classify_mfa_403_licensing_keyword_fallback():
+    msg = _classify_mfa_403("AccessDenied", "The tenant requires Azure AD Premium license.")
+    assert "P1 or P2" in msg
+
+
+def test_classify_mfa_403_fallback():
+    msg = _classify_mfa_403("AccessDenied", "Some other unknown reason.")
+    assert "Possible causes" in msg
+
+
+def test_admin_mfa_graph_api_403_returns_skipped():
+    class Failing403Provider:
+        def get_credential_registrations(self):
+            raise GraphAPIError(403, "Authorization_RequestDenied", "Insufficient privileges.")
+        def get_users(self, **_): return []
+        def get_role_members(self, _): return []
+        def get_subscribed_skus(self): return []
+
+    admins = [_user("a1")]
+    finding = AdminMFAFinder(Failing403Provider(), admins).run()
+    assert finding.status == FindingStatus.SKIPPED
+    assert "admin consent" in finding.skipped_reason.lower()
+
+
+def test_admin_mfa_graph_api_non_403_returns_error():
+    class Failing500Provider:
+        def get_credential_registrations(self):
+            raise GraphAPIError(500, "ServiceUnavailable", "Service is down.")
+        def get_users(self, **_): return []
+        def get_role_members(self, _): return []
+        def get_subscribed_skus(self): return []
+
+    admins = [_user("a1")]
+    finding = AdminMFAFinder(Failing500Provider(), admins).run()
+    assert finding.status == FindingStatus.ERROR

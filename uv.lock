@@ -161,13 +161,14 @@ wheels = [
 
 [[package]]
 name = "cloud-locksmith-assessment-cli"
-version = "0.1.0"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "msal" },
     { name = "pydantic" },
     { name = "reportlab" },
     { name = "requests" },
+    { name = "rich" },
     { name = "typer" },
 ]
 
@@ -183,6 +184,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.7" },
     { name = "reportlab", specifier = ">=4.1" },
     { name = "requests", specifier = ">=2.31" },
+    { name = "rich", specifier = ">=13.0" },
     { name = "typer", specifier = ">=0.12" },
 ]
 

@@ -54,7 +54,7 @@ def test_fetch_global_admins():
 
 
 def test_fetch_credential_registrations():
-    reg = CredentialRegistration(userId="u1", userPrincipalName="u1@t.com", isMfaRegistered=True)
+    reg = CredentialRegistration(id="u1", userPrincipalName="u1@t.com", isMfaRegistered=True)
     stub = StubGraphDataProvider(registrations=[reg])
     result = fetch_credential_registrations(stub)
     assert result[0].isMfaRegistered is True

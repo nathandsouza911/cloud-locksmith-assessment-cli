@@ -1,15 +1,44 @@
 [project]
 name = "cloud-locksmith-assessment-cli"
-version = "0.1.0"
+version = "1.0.0"
 requires-python = ">=3.12"
-description = "Local-first Microsoft 365 security assessment CLI"
+description = "Fast, local-first, read-only Microsoft 365 security posture assessment CLI"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Cloud Locksmith" }]
+keywords = [
+    "microsoft-365",
+    "entra-id",
+    "security",
+    "assessment",
+    "graph-api",
+    "posture",
+    "msp",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: System :: Systems Administration",
+]
 dependencies = [
     "typer>=0.12",
     "msal>=1.28",
     "requests>=2.31",
     "pydantic>=2.7",
     "reportlab>=4.1",
+    "rich>=13.0",
 ]
+
+[project.urls]
+Homepage = "https://cloudlocksmith.co"
+Repository = "https://github.com/nathandsouza911/cloud-locksmith-assessment-cli"
+Issues = "https://github.com/nathandsouza911/cloud-locksmith-assessment-cli/issues"
 
 [project.scripts]
 cloudlocksmith = "cli:app"
@@ -22,6 +51,25 @@ dev = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["auth", "findings", "graph", "models", "pricing", "reports"]
+
+# cli.py is a top-level module (the entry point target `cli:app`), not a package,
+# so it must be force-included or the installed console script cannot import it.
+[tool.hatch.build.targets.wheel.force-include]
+"cli.py" = "cli.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "cli.py",
+    "auth",
+    "findings",
+    "graph",
+    "models",
+    "pricing",
+    "reports",
+    "README.md",
+    "LICENSE",
+    "docs",
+]
 
 [build-system]
 requires = ["hatchling"]

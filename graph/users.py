@@ -10,7 +10,11 @@ _DISABLED_FIELDS = ["id", "displayName", "userPrincipalName", "assignedLicenses"
 
 
 def fetch_all_licensed_users(provider: GraphDataProvider) -> list[User]:
-    users = provider.get_users(select=_ALL_FIELDS)
+    try:
+        users = provider.get_users(select=_ALL_FIELDS)
+    except Exception:
+        # signInActivity requires AuditLog.Read.All; fall back so dormant check returns SKIPPED
+        users = provider.get_users(select=_DISABLED_FIELDS)
     return [u for u in users if u.assignedLicenses]
 
 

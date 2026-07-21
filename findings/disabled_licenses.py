@@ -13,7 +13,10 @@ class DisabledLicensedFinder:
             users = fetch_disabled_users(self._provider)
             licensed = [u for u in users if u.assignedLicenses]
             examples = [
-                UserSummary(display_name=u.displayName, user_principal_name=u.userPrincipalName)
+                UserSummary(
+                    display_name=u.displayName or u.userPrincipalName or u.id,
+                    user_principal_name=u.userPrincipalName or u.id,
+                )
                 for u in licensed[:3]
             ]
             return DisabledLicensedFinding(
